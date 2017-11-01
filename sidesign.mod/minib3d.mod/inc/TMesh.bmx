@@ -233,7 +233,8 @@ Type TMesh Extends TEntity
 	
 	Function LoadAnimMesh:TMesh(file$,parent_ent:TEntity=Null)
 		
-		If Right$(file$,4)=".3ds" Then file$=Replace$(file$,".3ds",".b3d")
+		'3DS Loader
+		If Right(String(file),4)=".3ds" Then Return T3DSLoader.Load(file)
 		
 		If FileType(file$)=0 Then Return TMesh.CreateCube()
 		
