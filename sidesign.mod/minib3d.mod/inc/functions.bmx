@@ -1464,3 +1464,37 @@ Function SetAnimKey(ent:TEntity,frame:Int,pos_key:Int=True,rot_key:Int=True,scal
 End Function
 Function AddAnimSeq(ent:TEntity,length:Int)
 End Function
+
+'MiniB3D-NG
+'AlignToVector by Warner
+Function AlignToVector(ent:TEntity, x:Float, y:Float, z:Float, TMP_unused:Int=1) 
+ 
+	'order=yaw-pitch-roll
+   
+	Local yaw#,pitch#,roll#
+	Local x1#,y1#,z1#
+	Local x2#,y2#,z2#
+	Local x3#,y3#,z3#
+   
+	yaw# = -ATan2(x, z)
+   
+	x1# = z*Sin(yaw) + x*Cos(yaw)
+	y1# = y
+	z1# = z*Cos(yaw) - x*Sin(yaw)
+   
+	pitch# = -ATan2(y1, z1)
+	x2# = x1
+	y2# = y1*Cos(pitch) - z1*Sin(pitch)
+	z2# = y1*Sin(pitch) + z1*Cos(pitch)
+   
+	roll# = -ATan2(x2, y2)
+	x3# = x2*Cos(roll) - y2*Sin(roll)
+	y3# = x2*Sin(roll) + y2*Cos(roll)
+	z3# = z2
+
+	'FIX - might turn out it should be If y <= 0 .. haven't tested it thouroughly enough
+	If y < 0 roll :+ 180
+   
+	RotateEntity ent, pitch, yaw, roll
+       
+End Function
