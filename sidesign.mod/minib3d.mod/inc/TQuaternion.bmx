@@ -154,6 +154,30 @@ Type TQuaternion
 		cz#=scale0#*Az#+scale1#*scaler_z#
 		
 	End Function
+	
+	'Ripped this from Leadwerks
+	Function EulerToQuat:TQuaternion(pitch:Float, yaw:Float, roll:Float) 
+		Local cr#=Cos(-roll#/2.0)
+		Local cp#=Cos(pitch#/2.0)
+		Local cy#=Cos(yaw#/2.0)
+		Local sr#=Sin(-roll#/2.0)
+		Local sp#=Sin(pitch#/2.0)
+		Local sy#=Sin(yaw#/2.0)
+		Local cpcy#=cp#*cy#
+		Local spsy#=sp#*sy#
+		Local spcy#=sp#*cy#
+		Local cpsy#=cp#*sy#
+		Local q:TQuaternion=New TQuaternion
+		q.w:Float = cr:Float * cpcy:Float + sr:Float * spsy:Float
+		'The coordinates were actually in a completely different order
+		'q.x:Float = sr:Float * cpcy:Float - cr:Float * spsy:Float
+		'q.y:Float = cr:Float * spcy:Float + sr:Float * cpsy:Float
+		'q.z:Float = cr:Float * cpsy:Float - sr:Float * spcy:Float
+		q.z:Float = sr:Float * cpcy:Float - cr:Float * spsy:Float
+		q.x:Float = cr:Float * spcy:Float + sr:Float * cpsy:Float
+		q.y:Float = cr:Float * cpsy:Float - sr:Float * spcy:Float
+		Return q
+	End Function
 		
 End Type
 

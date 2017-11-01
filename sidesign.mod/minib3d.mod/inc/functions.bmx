@@ -1456,8 +1456,6 @@ Function MeshesIntersect(mesh1:TMesh,mesh2:TMesh)
 End Function
 Function CreatePlane(sub_divs:Int=1,parent:TEntity=Null)
 End Function
-Function AlignToVector(vx:Float,vy:Float,vz:Float,axis:Int,rate:Int=1)
-End Function
 Function LoadAnimSeq(ent:TEntity,filename$)
 End Function
 Function SetAnimKey(ent:TEntity,frame:Int,pos_key:Int=True,rot_key:Int=True,scale_key:Int=True)
@@ -1465,9 +1463,13 @@ End Function
 Function AddAnimSeq(ent:TEntity,length:Int)
 End Function
 
+Rem
+bbdoc: <a href="https://kippykip.com/b3ddocs/commands/3d_commands/AlignToVector.htm">Online Help</a>
+End Rem
 'MiniB3D-NG
 'AlignToVector by Warner
 Function AlignToVector(ent:TEntity, x:Float, y:Float, z:Float, TMP_unused:Int=1) 
+	'TMP_unused is a stub, incase old BB projects need it
  
 	'order=yaw-pitch-roll
    
@@ -1492,9 +1494,104 @@ Function AlignToVector(ent:TEntity, x:Float, y:Float, z:Float, TMP_unused:Int=1)
 	y3# = x2*Sin(roll) + y2*Cos(roll)
 	z3# = z2
 
-	'FIX - might turn out it should be If y <= 0 .. haven't tested it thouroughly enough
+	'FIX - might turn out it should be If y <= 0 .. haven't tested it thoroughly enough
 	If y < 0 roll :+ 180
    
 	RotateEntity ent, pitch, yaw, roll
        
+End Function
+
+Rem
+bbdoc: Minib3d-NG Only
+about:
+This command is required for when moving bones with FindChild and GetChild.
+
+After setting positions / rotation of the bones, you will have to run this function after all the changes.
+Also has to be used after UpdateWorld otherwise the positions will reset.
+
+It should also be noted that it moves the bones relative to the parent bone/entity. And not from the worlds proper X Y Z coordinates.
+End Rem
+Function UpdateBones(ent:TEntity) 
+	If TMesh(ent) <> Null
+		Local start_frame:Int = TMesh(ent).anim_seqs_first[TMesh(ent).anim_seq] 
+		Local end_frame:Int = TMesh(ent).anim_seqs_last[TMesh(ent).anim_seq] 
+		Local framef:Float = TMesh(ent).AnimTime
+		
+		If TMesh(ent).anim = False Then Return ' mesh contains no anim data
+
+		TMesh(ent).anim_render=True
+
+		' cap framef values
+		If framef>end_frame Then framef=end_frame
+		If framef<start_frame Then framef=start_frame
+		
+		For Local bent:TBone=EachIn TMesh(ent).bones
+		
+			
+			'Used to convert Pitch Yaw and Roll to whatever a Quat is. I'm not mathematician		
+			Local QuadPYR:TQuaternion = TQuaternion.EulerToQuat:TQuaternion(bent.rx, bent.ry, bent.rz) 
+	
+			Local px3:Float=0
+			Local py3:Float=0
+			Local pz3:Float=0
+
+			' interpolate keys
+
+			Local w3:Float=0
+			Local x3:Float=0
+			Local y3:Float=0
+			Local z3:Float=0
+
+			'Forcefully override this! With the current position and rotation values!
+			'So this should readjust the positions using "PositionEntity" and "RotateEntity".
+			w3 = -QuadPYR.w
+			x3 = QuadPYR.x
+			y3 = QuadPYR.y
+			z3 = QuadPYR.z
+			
+			px3 = TBone(bent).px
+			py3 = TBone(bent).py
+			pz3 = TBone(bent).pz
+			
+	
+			TQuaternion.QuatToMat(w3, x3, y3, z3, TBone(bent).mat) 
+
+			TBone(bent).mat.grid[3, 0] = px3
+			TBone(bent).mat.grid[3, 1] = py3
+			TBone(bent).mat.grid[3, 2] = pz3
+			
+			' set mat2 to equal mat
+			TBone(bent).mat2.Overwrite(TBone(bent).mat)
+			
+			' set mat - includes root parent transformation
+			' mat is used for store global bone positions, needed when displaying actual bone positions and attaching entities to bones
+			If TBone(bent).parent<>Null
+				Local new_mat:TMatrix=TBone(bent).parent.mat.Copy()
+				new_mat.Multiply(TBone(bent).mat) 
+				TBone(bent).mat.Overwrite(new_mat)
+			EndIf
+			
+			' set mat2 - does not include root parent transformation
+			' mat2 is used to store local bone positions, and is needed for vertex deform
+			If TBone(TBone(bent).parent)<>Null
+				Local new_mat:TMatrix=TBone(TBone(bent).parent).mat2.Copy()
+				new_mat.Multiply(TBone(bent).mat2) 
+				TBone(bent).mat2.Overwrite(new_mat)
+			EndIf
+
+			' set tform mat
+			' A tform mat is needed to transform vertices, and is basically the bone mat multiplied by the inverse reference pose mat
+			TBone(bent).tform_mat.Overwrite(TBone(bent).mat2)
+			TBone(bent).tform_mat.Multiply(TBone(bent).inv_mat)
+
+			' update bone children
+			If TBone(bent).child_list.IsEmpty() <> True Then TEntity.UpdateChildren(bent) 
+							
+		Next
+							
+		' --- vertex deform ---
+		TAnimation.VertexDeform(TMesh(ent))
+	
+	EndIf
+		
 End Function
