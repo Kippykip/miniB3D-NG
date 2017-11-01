@@ -586,7 +586,10 @@ Type TModel
 					Wend
 					
 					If m_brush_id<>-1 Then mesh.PaintEntity(brush:TBrush[m_brush_id])
-					If tr_brush_id<>-1 Then surf.PaintSurface(brush:TBrush[tr_brush_id])
+					'Added this so a model will still load with a corrupted brush count ~Kippykip
+					If(tr_brush_id < Len(brush)) 
+						If tr_brush_id <> - 1 Then surf.PaintSurface(brush:TBrush[tr_brush_id] ) 
+					EndIf
 					
 					If v_flags&1=0 And new_tag$<>"TRIS" Then mesh.UpdateNormals() ' if no normal data supplied and no further tri data then update normals
 	
