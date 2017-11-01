@@ -1463,11 +1463,11 @@ End Function
 Function AddAnimSeq(ent:TEntity,length:Int)
 End Function
 
+'MiniB3D-NG functions
+'AlignToVector by Warner
 Rem
 bbdoc: <a href="https://kippykip.com/b3ddocs/commands/3d_commands/AlignToVector.htm">Online Help</a>
 End Rem
-'MiniB3D-NG
-'AlignToVector by Warner
 Function AlignToVector(ent:TEntity, x:Float, y:Float, z:Float, TMP_unused:Int=1) 
 	'TMP_unused is a stub, incase old BB projects need it
  
