@@ -1595,3 +1595,46 @@ Function UpdateBones(ent:TEntity)
 	EndIf
 		
 End Function
+
+Rem
+bbdoc: Minib3d-NG/OpenB3D Only
+about:
+Backported function from OpenB3D
+Moves entity to the given x y z position at the speed of rate.
+End Rem
+Function ActMoveTo(TMP_Entity:TEntity, TMP_X:Float, TMP_Y:Float, TMP_Z:Float, TMP_Rate:Float) 
+	Local dx:Float = TMP_X:Float - EntityX(TMP_Entity:TEntity) 
+	Local dy:Float = TMP_Y:Float - EntityY(TMP_Entity:TEntity) 
+	Local dz:Float = TMP_Z:Float - EntityZ(TMP_Entity:TEntity) 
+	Local n:Float = Sqr(dx:Float * dx:Float + dy:Float * dy:Float + dz:Float * dz:Float) 
+	
+	If (n:Float < TMP_Rate:Float) 
+		Return True
+	EndIf
+	
+	TranslateEntity(TMP_Entity:TEntity, dx:Float / n:Float * TMP_Rate:Float, dy:Float / n:Float * TMP_Rate:Float, dz:Float / n:Float * TMP_Rate:Float) 
+	Return False
+End Function
+
+Rem
+bbdoc: Minib3d-NG/OpenB3D Only
+about:
+Backported function from OpenB3D
+Turns entity to the given Pitch Yaw Roll rotation at the speed of rate.
+End Rem
+Function ActTurnTo(TMP_Entity:TEntity, TMP_Pitch:Float, TMP_Yaw:Float, TMP_Roll:Float, TMP_Rate:Float) 
+	Local dx:Float = TMP_Pitch:Float - EntityPitch(TMP_Entity:TEntity) 
+	Local dy:Float = TMP_Yaw:Float - EntityYaw(TMP_Entity:TEntity) 
+	Local dz:Float = TMP_Roll:Float - EntityRoll(TMP_Entity:TEntity) 
+	Local n:Float = Abs(dx) + Abs(dy) + Abs(dz) 
+	
+	If (n:Float < TMP_Rate:Float) 
+		Return True
+	EndIf
+	
+	Local p:Float = dx / n * TMP_Rate + EntityPitch(TMP_Entity:TEntity) 
+	Local y:Float = dy / n * TMP_Rate + EntityYaw(TMP_Entity:TEntity) 
+	Local r:Float = dz / n * TMP_Rate + EntityRoll(TMP_Entity:TEntity) 
+	RotateEntity(TMP_Entity:TEntity, p, y, r) 
+	Return False
+End Function
